@@ -1,9 +1,17 @@
 """AI/LLMニュースモニタリングWebアプリ"""
 from flask import Flask, render_template, request, jsonify
 from news_client import fetch_all_news, NEWS_FEEDS
-from translator import translate_text
 
 app = Flask(__name__)
+
+# 翻訳機能（オプション）
+try:
+    from translator import translate_text
+    TRANSLATION_ENABLED = True
+except ImportError:
+    TRANSLATION_ENABLED = False
+    def translate_text(text):
+        return text
 
 
 @app.route('/')
@@ -29,9 +37,9 @@ def get_news():
 
     result = []
     for n in news[:50]:
-        # タイトルと要約を日本語に翻訳
-        title_ja = translate_text(n.title)
-        summary_ja = translate_text(n.summary)
+        # タイトルと要約を日本語に翻訳（有効な場合）
+        title_ja = translate_text(n.title) if TRANSLATION_ENABLED else n.title
+        summary_ja = translate_text(n.summary) if TRANSLATION_ENABLED else n.summary
 
         result.append({
             'title': title_ja,
